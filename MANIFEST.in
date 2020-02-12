@@ -1,0 +1,4 @@
+include requirements.txt
+exclude joker-geometry/test_joker_geometry/*
+recursive-include joker/geometry/templates *.html
+
