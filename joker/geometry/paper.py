@@ -16,16 +16,16 @@ def conv_mm_to_inch(val: float):
 class StandardPaperSize:
     __slots__ = ['width']
     sqrt2 = math.sqrt(2)
-    fullwidths = {
-        ('A0', 'mm'): 840.8964152537146,
-        ('A0', 'cm'): 84.08964152537146,
-        ('A0', 'inch'): 33.10615808085491,
-        ('B0', 'mm'): 1000.,
-        ('B0', 'cm'): 100.,
-        ('B0', 'inch'): 39.37007874015748,
-        ('C0', 'mm'): 917.0040432046713,
-        ('C0', 'cm'): 91.70040432046713,
-        ('C0', 'inch'): 36.102521386010686,
+    base_widths = {
+        ('A', 'mm'): 840.8964152537146,
+        ('A', 'cm'): 84.08964152537146,
+        ('A', 'inch'): 33.10615808085491,
+        ('B', 'mm'): 1000.,
+        ('B', 'cm'): 100.,
+        ('B', 'inch'): 39.37007874015748,
+        ('C', 'mm'): 917.0040432046713,
+        ('C', 'cm'): 91.70040432046713,
+        ('C', 'inch'): 36.102521386010686,
     }
 
     def __init__(self, width: float = None):
@@ -59,24 +59,24 @@ class StandardPaperSize:
         return f'{width}x{length}'
 
     @classmethod
-    def _abc_series(cls, pc: str = 'A0', unit: str = 'mm'):
+    def abc_series(cls, base_name: str = 'A', unit: str = 'mm'):
         try:
-            w = cls.fullwidths[pc, unit]
+            w = cls.base_widths[base_name, unit]
         except KeyError:
             raise ValueError('unit must be "mm", "cm" or "inch"')
         return cls(w)
 
     @classmethod
     def a_series(cls, unit: str = 'mm'):
-        return cls._abc_series('A0', unit)
+        return cls.abc_series('A', unit)
 
     @classmethod
     def b_series(cls, unit: str = 'mm'):
-        return cls._abc_series('B0', unit)
+        return cls.abc_series('B', unit)
 
     @classmethod
     def c_series(cls, unit: str = 'mm'):
-        return cls._abc_series('C0', unit)
+        return cls.abc_series('C', unit)
 
     @classmethod
     def from_name(cls, name: str = 'A4', unit: str = 'mm'):
@@ -85,4 +85,12 @@ class StandardPaperSize:
             msg = 'unknown name for standard paper size: "{}"'.format(name)
             raise ValueError(msg)
         a, n = mat.groups()
-        return cls._abc_series(a + '0', unit)[int(n)]
+        return cls.abc_series(a + '0', unit)[int(n)]
+
+    @classmethod
+    def iter_abc_sizes(cls, unit: str = 'mm', ndigits=64):
+        for base_name in 'ABC':
+            series = cls.abc_series(base_name, unit)
+            for n in range(11):
+                name = base_name + str(n)
+                yield name, series[n].pair(ndigits)
